@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { MongoDB } = require('./BBDD/MongoDB');
 const { has, response } = require('./utils/Util');
+const User = require('./models/User');
 
 const BBDD = new MongoDB();
 
@@ -41,8 +42,8 @@ app.get('/', (req, res) => {
 });
 
 //Get user by email
-app.get('/api/user/:email', async (req, res) => {
-    const email = req.params.email;
+app.get('/api/user', async (req, res) => {
+    const email = req.query.email;
     const user = await BBDD.getUserByEmail(email);
     res.send(response(200, user));
 });
@@ -57,25 +58,27 @@ app.post('/api/user', async (req, res) => {
 //Login
 app.post('/api/user/login', async (req, res) => {
     const user = req.body;
-    const userDB = await BBDD.getUserByEmail(user.email);
 
-    //If the user exists we check the password if not we check the username
-    if(userDB){
+    const username = user.username;
+
+    if(username.toString().includes('@')){
+        const userDB = await BBDD.getUserByEmail();
+
         if(userDB.password === has(user.password)){
             res.send(response(200, userDB));
         }else{
-            res.send(response(401, "Password incorrect"));
+            res.send(response(401, new User()));
         }
     } else{
-        const userDB = await BBDD.getUserByUsername(user.username);
+        const userDB = await BBDD.getUserByUsername(username);
         if(userDB){
-            if(userDB.password === user.password){
+            if(userDB.password === has(user.password)){
                 res.send(response(200, userDB));
             }else{
-                res.send(response(401, "Password incorrect"));
+                res.send(response(401, new User()));
             }
         }else{
-            res.send(response(404, "User not found"));
+            res.send(response(401, new User()));
         }
     }
 
@@ -96,8 +99,9 @@ app.get('/api/recipes', async (req, res) => {
 });
 
 //Get recipe by id
-app.get('/api/recipe/:id', async (req, res) => {
-    const id = req.params.id;
+app.get('/api/recipe', async (req, res) => {
+    const id = req.query.id;
+
     const recipe = await BBDD.getRecipeById(id);
     res.send(response(200, recipe));
 });
@@ -106,6 +110,20 @@ app.get('/api/recipe/:id', async (req, res) => {
 app.post('/api/recipe', async (req, res) => {
     const recipe = req.body;
     const result = await BBDD.createRecipe(recipe);
+    res.send(response(200, result));
+});
+
+//Like recipe
+app.put('/api/recipe/like', async (req, res) => {
+    const { recipeId, userId } = req.body;
+    const result = await BBDD.likeRecipe(recipeId, userId);
+    res.send(response(200, result));
+});
+
+//Unlike recipe
+app.put('/api/recipe/unlike', async (req, res) => {
+    const { recipeId, userId } = req.body;
+    const result = await BBDD.unlikeRecipe(recipeId, userId);
     res.send(response(200, result));
 });
 

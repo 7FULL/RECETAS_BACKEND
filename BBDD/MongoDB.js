@@ -1,5 +1,6 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const User = require('../Models/User');
+const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
+const User = require('../Models/User.js');
+const Recipe = require('../Models/Recipe.js');
 
 class MongoDB {
     constructor() {
@@ -42,7 +43,7 @@ class MongoDB {
     }
 
     async createUser(user) {
-        const newUser = new User(user.username, user.password, user.name, user.surname, user.email, user.phone, user.image, user.recipes, user.followers);
+        const newUser = new User(user.username, user.password, user.name, user.surname, user.email, user.phone, user.image, user.likes,user.recipes, user.followers);
         return await this.client.db("FULLRECETAS").collection("Users").insertOne(newUser);
     }
 
@@ -55,11 +56,15 @@ class MongoDB {
     }
 
     async getRecipeById(id) {
+        const objectId = new ObjectId(id)
+
         //We get the recipe by its id, then we update the publisher using its id
-        const recipe = await this.client.db("FULLRECETAS").collection("Recipes").findOne({_id : id});
+        const recipe = await this.client.db("FULLRECETAS").collection("Recipes").findOne({_id : objectId});
+
+        const publisherObjectId = new ObjectId(recipe.publisher);
 
         //We update the publisher
-        recipe.publisher = await this.client.db("FULLRECETAS").collection("Users").findOne({_id: recipe.publisher});
+        recipe.publisher = await this.client.db("FULLRECETAS").collection("Users").findOne({_id: publisherObjectId});
 
         return recipe;
     }
@@ -90,7 +95,7 @@ class MongoDB {
 
     async getTrendingRecipes() {
         //We get the top 5 recipes with more likes, then we update the publisher using its id
-        const recipes = await this.client.db("FULLRECETAS").collection("Recipes").find().sort({likes: -1}).limit(5).toArray();
+        const recipes = await this.client.db("FULLRECETAS").collection("Recipes").find().sort({likes: -1}).limit(6).toArray();
 
         //We update the publisher
         for(let i = 0; i < recipes.length; i++){
@@ -98,6 +103,41 @@ class MongoDB {
         }
 
         return recipes;
+    }
+
+    async likeRecipe(recipeId, userId) {
+        const objectId = new ObjectId(recipeId);
+        const userObjectId = new ObjectId(userId);
+
+        //We check if the user has already liked the recipe
+        const user = await this.client.db("FULLRECETAS").collection("Users").findOne({_id: userObjectId});
+
+        if(user.likes.includes(recipeId)){
+            return new Recipe();
+        }
+
+        //We add the id of the recipe to the likes array of the user
+        await this.client.db("FULLRECETAS").collection("Users").updateOne({_id: userObjectId}, {$push: {likes: recipeId}});
+
+        //We add 1 to the number of likes of the recipe
+        return await this.client.db("FULLRECETAS").collection("Recipes").updateOne({_id: objectId}, {$inc: {likes: 1}});
+    }
+
+    async unlikeRecipe(recipeId, userId) {
+        const objectId = new ObjectId(recipeId);
+        const userObjectId = new ObjectId(userId);
+
+        //We check if the user has already liked the recipe
+        const user = await this.client.db("FULLRECETAS").collection("Users").findOne({_id: userObjectId});
+        if(!user.likes.includes(recipeId)){
+            return new Recipe();
+        }
+
+        //We remove the id of the recipe from the likes array of the user
+        await this.client.db("FULLRECETAS").collection("Users").updateOne({_id: userObjectId}, {$pull: {likes: recipeId}});
+
+        //We remove 1 to the number of likes of the recipe
+        return await this.client.db("FULLRECETAS").collection("Recipes").updateOne({_id: objectId}, {$inc: {likes: -1}});
     }
 }
 
