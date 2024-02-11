@@ -139,6 +139,21 @@ class MongoDB {
         //We remove 1 to the number of likes of the recipe
         return await this.client.db("FULLRECETAS").collection("Recipes").updateOne({_id: objectId}, {$inc: {likes: -1}});
     }
+
+    async getLikesRecipesByUserId(email) {
+        //we get the recipes liked by the user
+        const user = await this.getUserByEmail(email)
+
+        //We get the recipes that are in the likes array of the user ( the likes array contains the ids of the recipes in a string format so we need to convert them to ObjectId)
+        const recipes = await this.client.db("FULLRECETAS").collection("Recipes").find({_id: {$in: user.likes.map(id => new ObjectId(id))}}).toArray();
+
+        //We update the publisher
+        for(let i = 0; i < recipes.length; i++){
+            recipes[i].publisher = await this.client.db("FULLRECETAS").collection("Users").findOne({_id: recipes[i].publisher});
+        }
+
+        return recipes;
+    }
 }
 
 module.exports = {

@@ -127,3 +127,10 @@ app.put('/api/recipe/unlike', async (req, res) => {
     res.send(response(200, result));
 });
 
+//Get all likes recipes by user
+app.get('/api/recipes/likes', async (req, res) => {
+    const userId = req.query.id;
+    const recipes = await BBDD.getLikesRecipesByUserId(userId);
+    res.send(response(200, recipes));
+});
+
