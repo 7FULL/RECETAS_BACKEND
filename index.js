@@ -134,3 +134,9 @@ app.get('/api/recipes/likes', async (req, res) => {
     res.send(response(200, recipes));
 });
 
+//Get all tags
+app.get('/api/tags', async (req, res) => {
+    const tags = await BBDD.getAllTags();
+    res.send(response(200, tags));
+});
+

@@ -154,6 +154,11 @@ class MongoDB {
 
         return recipes;
     }
+
+    async getAllTags() {
+        //We get all the tags
+        return await this.client.db("FULLRECETAS").collection("Tags").find().toArray();
+    }
 }
 
 module.exports = {
