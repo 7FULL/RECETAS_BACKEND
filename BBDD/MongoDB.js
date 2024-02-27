@@ -1,6 +1,7 @@
 const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 const User = require('../Models/User.js');
 const Recipe = require('../Models/Recipe.js');
+const {writeFileSync} = require("fs");
 
 class MongoDB {
     constructor() {
@@ -52,6 +53,7 @@ class MongoDB {
     }
 
     async createRecipe(recipe) {
+        // We save the recipe url in the database
         return await this.client.db("FULLRECETAS").collection("Recipes").insertOne(recipe);
     }
 

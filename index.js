@@ -3,13 +3,21 @@ const bodyParser = require('body-parser');
 const { MongoDB } = require('./BBDD/MongoDB');
 const { has, response } = require('./utils/Util');
 const User = require('./models/User');
+const multer = require('multer');
 
 const BBDD = new MongoDB();
 
 const app = express();
 const port = 3000;
+const ws = require('fs');
+
+//Multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.use(bodyParser.json());
+
+app.use('/images/recipes', express.static('public/images/recipes'));
 
 //Cors
 app.use((req, res, next) => {
@@ -107,9 +115,25 @@ app.get('/api/recipe', async (req, res) => {
 });
 
 //Create recipe
-app.post('/api/recipe', async (req, res) => {
-    const recipe = req.body;
+app.post('/api/recipe', upload.single("photo"), async (req, res) => {
+    const recipe = JSON.parse(req.body.recipe);
+    const image = req.file.buffer
+
+    // We delete the _id property from the recipe object
+    delete recipe._id;
+
+    // We save the recipe photo in the directory /public/images/recipes
+    ws.writeFileSync(`./public/images/recipes/${recipe.name}.png`, image);
+
+    // We save the url of the image in the recipe object
+    recipe.image = `http://localhost:3000/images/recipes/${recipe.name}.png`;
+
+    recipe.publisher = recipe.publisher._id;
+
     const result = await BBDD.createRecipe(recipe);
+
+    console.log(result);
+
     res.send(response(200, result));
 });
 
