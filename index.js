@@ -9,7 +9,6 @@ const BBDD = new MongoDB();
 
 const app = express();
 const port = 3000;
-const ws = require('fs');
 
 //Multer
 const storage = multer.memoryStorage();
@@ -119,20 +118,16 @@ app.post('/api/recipe', upload.single("photo"), async (req, res) => {
     const recipe = JSON.parse(req.body.recipe);
     const image = req.file.buffer
 
-    // We delete the _id property from the recipe object
-    delete recipe._id;
+    let isEdit = req.query.edit;
 
-    // We save the recipe photo in the directory /public/images/recipes
-    ws.writeFileSync(`./public/images/recipes/${recipe.name}.png`, image);
-
-    // We save the url of the image in the recipe object
-    recipe.image = `http://localhost:3000/images/recipes/${recipe.name}.png`;
+    isEdit = Boolean(isEdit);
 
     recipe.publisher = recipe.publisher._id;
 
-    const result = await BBDD.createRecipe(recipe);
+    const result = await BBDD.createRecipe(recipe, isEdit, image);
 
-    console.log(result);
+    // We add the recipe to the user
+    await BBDD.addRecipeToUser(recipe.publisher, result.insertedId);
 
     res.send(response(200, result));
 });
@@ -164,3 +159,49 @@ app.get('/api/tags', async (req, res) => {
     res.send(response(200, tags));
 });
 
+//Delete recipe
+app.post('/api/recipe/delete', async (req, res) => {
+    const recipe = req.body;
+    await BBDD.deleteRecipe(recipe);
+
+    console.log("Recipe deleted");
+
+    res.send(response(200, "Recipe deleted"));
+});
+
+//Get all recipes by user
+app.get('/api/recipes/user', async (req, res) => {
+    const userId = req.query.id;
+    const recipes = await BBDD.getRecipesByUserId(userId);
+    res.send(response(200, recipes));
+});
+
+//Follow user
+app.post('/api/user/follow', async (req, res) => {
+    const { userToFollow, userFollowing } = req.body;
+
+    const result = await BBDD.followUser(userToFollow, userFollowing);
+    res.send(response(200, "User followed"));
+});
+
+//Unfollow user
+app.post('/api/user/unfollow', async (req, res) => {
+    const { userToUnfollow, userUnfollowing } = req.body;
+
+    const result = await BBDD.unfollowUser(userToUnfollow, userUnfollowing);
+    res.send(response(200, "User unfollowed"));
+});
+
+//Get user by id
+app.get('/api/user/id', async (req, res) => {
+    const id = req.query.id;
+    const user = await BBDD.getUserById(id);
+    res.send(response(200, user));
+});
+
+//Register user
+app.post('/api/user/register', async (req, res) => {
+    const user = req.body;
+    const result = await BBDD.createUser(user);
+    res.send(response(200, "User registered"));
+});
