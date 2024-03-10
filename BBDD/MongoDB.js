@@ -1,6 +1,6 @@
 const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
-const User = require('../Models/User.js');
-const Recipe = require('../Models/Recipe.js');
+const User = require('../models/User.js');
+const Recipe = require('../models/Recipe.js');
 const ws = require('fs');
 
 class MongoDB {
