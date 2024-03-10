@@ -44,7 +44,7 @@ class MongoDB {
     }
 
     async createUser(user) {
-        const newUser = new User(user.username, user.password, user.name, user.surname, user.email, user.phone, user.image, user.likes,user.recipes, user.followers);
+        const newUser = new User(user.username, user.password, user.name, user.surname, user.email, user.image, user.likes,user.recipes, user.followers);
         return await this.client.db("FULLRECETAS").collection("Users").insertOne(newUser);
     }
 

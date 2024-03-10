@@ -9,7 +9,6 @@ class User {
         this.name = name || null; // Si no se proporciona un nombre, se inicializa como null
         this.surname = surname || null; // Si no se proporciona un apellido, se inicializa como null
         this.email = email || null; // Si no se proporciona un email, se inicializa como null
-        this.phone = phone || null; // Si no se proporciona un teléfono, se inicializa como null
         this.image = image || null; // Si no se proporciona una imagen, se inicializa como null
         this.likes = likes || []; // Si no se proporciona un array de likes, se inicializa como un array vacío
         this.recipes = recipes || []; // Si no se proporciona un array de recetas, se inicializa como un array vacío

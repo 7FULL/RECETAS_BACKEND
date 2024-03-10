@@ -68,6 +68,8 @@ app.post('/api/user/login', async (req, res) => {
 
     const username = user.username;
 
+    //TODO: No furula
+
     if(username.toString().includes('@')){
         const userDB = await BBDD.getUserByEmail();
 
