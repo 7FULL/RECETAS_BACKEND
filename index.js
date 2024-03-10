@@ -122,8 +122,6 @@ app.post('/api/recipe', upload.single("photo"), async (req, res) => {
 
     let isEdit = req.query.edit;
 
-    isEdit = Boolean(isEdit);
-
     recipe.publisher = recipe.publisher._id;
 
     const result = await BBDD.createRecipe(recipe, isEdit, image);
