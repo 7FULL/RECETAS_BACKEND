@@ -106,7 +106,7 @@ class MongoDB {
             ws.writeFileSync(`./public/images/recipes/${originalId}.png`, image);
 
             // We save the url of the image in the recipe object
-            recipe.image = `http://10.0.2.2:3000/images/recipes/${originalId}.png`;
+            recipe.image = `https://recetas-backend.onrender.com/images/recipes/${originalId}.png`;
 
             return await this.client.db("FULLRECETAS").collection("Recipes").updateOne({_id: objectId}, {$set: recipe});
         }else{
@@ -116,7 +116,7 @@ class MongoDB {
             ws.writeFileSync(`./public/images/recipes/${recipe._id}.png`, image);
 
             // We save the url of the image in the recipe object
-            recipe.image = `http://10.0.2.2:3000/images/recipes/${recipe._id}.png`;
+            recipe.image = `https://recetas-backend.onrender.com/images/recipes/${recipe._id}.png`;
 
             return await this.client.db("FULLRECETAS").collection("Recipes").insertOne(recipe);
         }
