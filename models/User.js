@@ -2,7 +2,7 @@
 const { has } = require('../utils/Util');
 
 class User {
-    constructor(username, password, name, surname, email, phone, image, likes, recipes, followers, following, token) {
+    constructor(username, password, name, surname, email, image, likes, recipes, followers, following, token) {
         this.username = username || null; // Si no se proporciona un username, se inicializa como null
         //Hash the password
         this.password = has(password) || null; // Se ha añadido la función has para encriptar la contraseña (ver más abajo)
