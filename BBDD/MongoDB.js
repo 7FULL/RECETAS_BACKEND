@@ -1,7 +1,6 @@
 const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 const User = require('../models/User.js');
 const Recipe = require('../models/Recipe.js');
-const ws = require('fs');
 
 class MongoDB {
     constructor() {
@@ -83,9 +82,6 @@ class MongoDB {
     }
 
     async deleteRecipe(recipe) {
-        //We delete the recipe photo from the directory /public/images/recipes
-        ws.unlinkSync(`./public/images/recipes/${recipe._id}.png`);
-
         const objectId = new ObjectId(recipe._id);
         return await this.client.db("FULLRECETAS").collection("Recipes").deleteOne({_id: objectId});
     }

@@ -119,7 +119,13 @@ app.post('/api/recipe', async (req, res) => {
 
     const result = await BBDD.createRecipe(recipe, isEdit);
 
-    const id = result.insertedId;
+    let id = "";
+
+    if(isEdit == false){
+        id = result.insertedId;
+    }else{
+        id = recipe._id;
+    }
 
     // We add the recipe to the user
     await BBDD.addRecipeToUser(recipe.publisher, result.insertedId);
