@@ -94,7 +94,7 @@ class MongoDB {
         return await this.client.db("FULLRECETAS").collection("Users").findOne({username : username});
     }
 
-    async createRecipe(recipe, isEdit, image) {
+    async createRecipe(recipe, isEdit) {
         // We save the recipe url in the database if the _id is not null
         if(isEdit == true){
             const originalId = recipe._id;
@@ -102,21 +102,15 @@ class MongoDB {
 
             delete recipe._id;
 
-            // We save the recipe photo in the directory /public/images/recipes
-            ws.writeFileSync(`./public/images/recipes/${originalId}.png`, image);
-
             // We save the url of the image in the recipe object
-            recipe.image = `https://recetas-backend.onrender.com/images/recipes/${originalId}.png`;
+            recipe.image = `${originalId}.png`;
 
             return await this.client.db("FULLRECETAS").collection("Recipes").updateOne({_id: objectId}, {$set: recipe});
         }else{
             recipe._id = new ObjectId();
 
-            // We save the recipe photo in the directory /public/images/recipes
-            ws.writeFileSync(`./public/images/recipes/${recipe._id}.png`, image);
-
             // We save the url of the image in the recipe object
-            recipe.image = `https://recetas-backend.onrender.com/images/recipes/${recipe._id}.png`;
+            recipe.image = `${recipe._id}.png`;
 
             return await this.client.db("FULLRECETAS").collection("Recipes").insertOne(recipe);
         }

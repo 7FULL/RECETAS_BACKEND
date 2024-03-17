@@ -3,16 +3,11 @@ const bodyParser = require('body-parser');
 const { MongoDB } = require('./BBDD/MongoDB');
 const { has, response } = require('./utils/Util');
 const User = require('./models/User');
-const multer = require('multer');
 
 const BBDD = new MongoDB();
 
 const app = express();
 const port = 3000;
-
-//Multer
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 app.use(bodyParser.json());
 
@@ -68,15 +63,15 @@ app.post('/api/user/login', async (req, res) => {
 
     const username = user.username;
 
-    //TODO: No furula
-
     if(username.toString().includes('@')){
-        const userDB = await BBDD.getUserByEmail();
+        const userDB = await BBDD.getUserByEmail(username);
 
-        if(userDB.password === has(user.password)){
-            res.send(response(200, userDB));
-        }else{
-            res.send(response(401, new User()));
+        if(userDB){
+            if(userDB.password === has(user.password)){
+                res.send(response(200, userDB));
+            }else{
+                res.send(response(401, new User()));
+            }
         }
     } else{
         const userDB = await BBDD.getUserByUsername(username);
@@ -116,20 +111,20 @@ app.get('/api/recipe', async (req, res) => {
 });
 
 //Create recipe
-app.post('/api/recipe', upload.single("photo"), async (req, res) => {
-    const recipe = JSON.parse(req.body.recipe);
-    const image = req.file.buffer
-
+app.post('/api/recipe', async (req, res) => {
+    const recipe = req.body;
     let isEdit = req.query.edit;
 
     recipe.publisher = recipe.publisher._id;
 
-    const result = await BBDD.createRecipe(recipe, isEdit, image);
+    const result = await BBDD.createRecipe(recipe, isEdit);
+
+    const id = result.insertedId;
 
     // We add the recipe to the user
     await BBDD.addRecipeToUser(recipe.publisher, result.insertedId);
 
-    res.send(response(200, result));
+    res.send(response(200, id));
 });
 
 //Like recipe
