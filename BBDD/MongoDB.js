@@ -91,8 +91,7 @@ class MongoDB {
     }
 
     async createRecipe(recipe, isEdit) {
-        // We save the recipe url in the database if the _id is not null
-        if(isEdit == true){
+        if(isEdit.toLowerCase().includes("true")){
             const originalId = recipe._id;
             const objectId = new ObjectId(recipe._id);
 
